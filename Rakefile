@@ -19,6 +19,7 @@ begin
     gem.homepage = "http://github.com/oggy/hoard"
     gem.authors = ["George Ogata"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.add_development_dependency "cucumber", ">= 0.4.4"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -26,21 +27,20 @@ rescue LoadError
 end
 
 require 'spec/rake/spectask'
-namespace :spec do
-  desc "Run unit specs."
-  Spec::Rake::SpecTask.new(:unit => :check_dependencies) do |spec|
-    spec.libs << 'lib' << 'spec'
-    spec.spec_files = FileList['spec/unit/**/*_spec.rb']
-  end
 
-  desc "Run integration specs."
-  Spec::Rake::SpecTask.new(:integration => :check_dependencies) do |spec|
-    spec.libs << 'lib' << 'spec'
-    spec.spec_files = FileList['spec/integration/**/*_spec.rb']
-  end
+desc "Run specs."
+Spec::Rake::SpecTask.new(:spec => :check_dependencies) do |spec|
+  spec.libs << 'lib' << 'spec'
+  spec.spec_files = FileList['spec/unit/**/*_spec.rb']
 end
 
-task :spec => ['spec:unit', 'spec:integration']
+require 'cucumber/rake/task'
+
+desc 'Run features.'
+Cucumber::Rake::Task.new(:cucumber => :check_dependencies) do |t|
+  t.fork = false
+  t.cucumber_opts = "--color --strict --format #{ENV['CUCUMBER_FORMAT'] || 'pretty'}"
+end
 
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
@@ -52,4 +52,4 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-task :default => :spec
+task :default => [:spec, :cucumber]
