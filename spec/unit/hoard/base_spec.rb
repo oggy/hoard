@@ -115,6 +115,12 @@ describe Hoard::Base do
       @hoard.create
       File.should be_directory('HOARD')
     end
+
+    it "should be able to create the hoard in a directory that does not yet exist" do
+      @hoard.hoard_path = "HOARD/HOARD"
+      @hoard.create
+      File.should be_directory('HOARD/HOARD')
+    end
   end
 
   describe "#use" do

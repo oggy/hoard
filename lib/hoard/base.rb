@@ -21,13 +21,13 @@ module Hoard
     #
     # The path of the hoard directory.
     #
-    attr_reader :hoard_path
+    attr_accessor :hoard_path
 
     #
     # The load path array that will be modified when the hoard is
     # #use-d.
     #
-    attr_reader :load_path
+    attr_accessor :load_path
 
     #
     # Declare that the load path is ready for hoarding.
@@ -52,7 +52,7 @@ module Hoard
     # Usually called by #ready, rather than invoked directly.
     #
     def create
-      Dir.mkdir(hoard_path)
+      FileUtils.mkdir_p(hoard_path)
     end
 
     #
