@@ -1,5 +1,6 @@
 require 'hoard'
 require 'spec'
+require 'rspec_outlines'
 
 ROOT = File.expand_path('../..', __FILE__)
 

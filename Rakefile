@@ -18,8 +18,9 @@ begin
     gem.email = "george.ogata@gmail.com"
     gem.homepage = "http://github.com/oggy/hoard"
     gem.authors = ["George Ogata"]
-    gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_development_dependency "cucumber", ">= 0.4.4"
+    gem.add_development_dependency "rspec", "~> 1.2.9"
+    gem.add_development_dependency "cucumber", "~> 0.4.4"
+    gem.add_development_dependency "rspec_outlines", "~> 0.0.1"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

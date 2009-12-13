@@ -1,5 +1,8 @@
+require 'ruby-debug'
 require 'rbconfig'
 require 'fileutils'
+require 'pathname'
+
 
 ROOT = File.expand_path('../../..', __FILE__)
 WORKSPACE_DIR = "#{ROOT}/tmp"
