@@ -15,3 +15,7 @@ end
 After do
   FileUtils.rm_rf(WORKSPACE_DIR)
 end
+
+def ruby
+  File.join(Config::CONFIG['bindir'], Config::CONFIG['RUBY_INSTALL_NAME'])
+end
