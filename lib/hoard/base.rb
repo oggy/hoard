@@ -1,4 +1,5 @@
 require 'hoard/base/builder'
+require 'hoard/base/layer'
 
 module Hoard
   class Base
@@ -55,9 +56,7 @@ module Hoard
     #
     def create
       builder = Builder.new(hoard_path)
-      load_path.each do |entry|
-        builder.add_load_path_entry File.expand_path(entry)
-      end
+      builder.build(load_path)
     end
 
     #
