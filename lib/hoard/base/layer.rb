@@ -4,7 +4,8 @@ module Hoard
       def initialize(hoard_path, number)
         @hoard_path = hoard_path
         @number = number
-        @path = File.join(hoard_path, number.to_s)
+        @root = File.join(hoard_path, number.to_s)
+        @path = @root.dup
         @depth = 0
         FileUtils.mkdir_p path
       end
@@ -22,13 +23,80 @@ module Hoard
       #
       # The path of the root of the layer.
       #
+      attr_reader :root
+
+      #
+      # The path of the directory in the layer that is added to the
+      # load path when the hoard is used.
+      #
       attr_reader :path
+
+      #
+      # Same as #path, but relative to the hoard path.
+      #
+      def path_from_hoard
+        Pathname(path).relative_path_from(Pathname(hoard_path)).to_s
+      end
+
+      #
+      # The number of directories under the layer root at which #path
+      # resides.
+      #
+      # Usually, this is 0.  If support files are required, however,
+      # extra directories need to be added above the usual layer path.
+      # This is done by pushing the path down using dummy directories.
+      # For example, if 'a/b/c' needs a support file
+      # '../../../../file', the layer looks like:
+      #
+      #     .
+      #     |-- __hoard__
+      #     |   `-- __hoard__
+      #     |       `-- a
+      #     |           `-- b
+      #     |               `-- c
+      #     `-- file
+      #
+      attr_reader :depth
+
+      #
+      # Set the depth of the layer.
+      #
+      # Modify the directory structure as required.
+      #
+      def depth=(depth)
+        return if depth == @depth
+
+        original_depth = @depth
+        original_path = @path
+
+        @depth = depth
+        @path = depth.zero? ? root : File.join(root, '/__hoard__'*depth)
+        if depth > original_depth
+          File.rename original_path, "#{original_path}.tmp"
+          FileUtils.mkdir_p File.dirname(path)
+          File.rename "#{original_path}.tmp", path
+        else
+          File.rename original_path, "#{path}.tmp"
+          FileUtils.rm_rf path
+          File.rename "#{path}.tmp", path
+        end
+      end
 
       #
       # Return the given path relative to the layer path.
       #
       def path_of(path)
         File.join(self.path, path)
+      end
+
+      #
+      # Return the target of the symlink at +path+, or nil if no such
+      # symlink exists.
+      #
+      def target_of(path)
+        file?(path) or
+          return nil
+        File.readlink(path_of(path))
       end
 
       #

@@ -1,3 +1,6 @@
+require 'pathname'
+require 'fileutils'
+
 require 'hoard/base'
 
 module Hoard

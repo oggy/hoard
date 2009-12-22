@@ -16,6 +16,7 @@ module Hoard
     def initialize(options={}, &block)
       @hoard_path = options[:hoard_path] || 'hoard'
       @creating = options[:create] || false
+      @support_files = options[:support_files] || {}
 
       @load_path = options[:load_path] || $LOAD_PATH
       @after_create = options[:after_create] || lambda{exit}
@@ -25,6 +26,11 @@ module Hoard
     # The path of the hoard directory.
     #
     attr_accessor :hoard_path
+
+    #
+    # The support files to add to the hoard.
+    #
+    attr_accessor :support_files
 
     #
     # The load path array that will be modified when the hoard is
@@ -55,7 +61,7 @@ module Hoard
     # Usually called by #ready, rather than invoked directly.
     #
     def create
-      builder = Builder.new(hoard_path)
+      builder = Builder.new(hoard_path, support_files)
       builder.build(load_path)
     end
 
@@ -66,11 +72,11 @@ module Hoard
     # by #ready, rather than invoked directly.
     #
     def use
-      return if !File.directory?(hoard_path)
-      layers = Dir.entries(hoard_path).grep(/\A\d+\z/).sort_by{|s| s.to_i}
-      paths = layers.map{|layer| File.join(hoard_path, layer.to_s)}
-      return if paths.empty?
-      load_path.replace(paths)
+      metadata_path = File.join(hoard_path, 'metadata.yml')
+      return if !File.file?(metadata_path)
+      directories = YAML.load_file(metadata_path)['load_path']
+      directories.map!{|dir| './' + File.join(hoard_path, dir)}
+      load_path.replace(directories)
     end
 
     #

@@ -1,24 +1,43 @@
 module Hoard
   class Base
     class Builder
-      def initialize(hoard_path)
+      def initialize(hoard_path, support_files)
         @hoard_path = hoard_path
+        @support_files = support_files
         @layers = []
         FileUtils.mkdir_p hoard_path
       end
 
-      attr_reader :hoard_path
+      attr_reader :hoard_path, :support_files
 
       def build(load_path)
         load_path.each do |entry|
           add_load_path_entry File.expand_path(entry)
         end
+        support_files.each do |directory, support_spec|
+          support_spec.each do |needy_path, support_path|
+            layer = layer_with_file(needy_path, directory) or
+              next
+            num_ascents = num_ascents_required_for(needy_path, support_path) or
+              next
+            layer.depth = num_ascents
+
+            # TODO: support colliding support paths
+            needy_link = Pathname( layer.path_of(needy_path) )
+            needy_target = Pathname( layer.target_of(needy_path) )
+            support_link = needy_link.dirname + support_path
+            support_target = needy_target.dirname + support_path
+            FileUtils.mkdir_p File.dirname(support_link)
+            File.symlink(support_target.cleanpath.to_s, support_link.cleanpath.to_s)
+          end
+        end
+        add_metadata_file
       end
 
       private  # -----------------------------------------------------
 
       def layer(number)
-        @layers[number] ||= Layer.new(hoard_path, number)
+        @layers[number-1] ||= Layer.new(hoard_path, number)
       end
 
       def next_layer(layer)
@@ -80,6 +99,49 @@ module Hoard
           FileUtils.mkdir_p File.dirname(dst_path)
         end
         File.rename(src_path, dst_path)
+      end
+
+      def layer_with_file(path, directory)
+        @layers.find do |layer|
+          target = File.expand_path( File.join(directory, path) )
+          layer.target_of(path) == target
+        end
+      end
+
+      #
+      # Return the number of ascents required for +support path+
+      # relative to +needy_path+.
+      #
+      # This is the number of directories ascended through above the
+      # root of the layer, when walking to +support_path+ from
+      # +needy_path+.
+      #
+      # For example, if 'a/b/c' needs support path '../../../../file',
+      # then the number of ascents is 2, as the path relative to the
+      # root of the layer is '../../file'.
+      #
+      # If the support_path does not ascend past the root of the
+      # layer, return nil.  In this case, no support file is needed,
+      # as the file should be in the same load path directory as the
+      # file.
+      #
+      def num_ascents_required_for(needy_path, support_path)
+        pathname = Pathname(support_path)
+        pathname.relative? or
+          raise ArgumentError, "support file must be a relative path (to the needy file)"
+        num_support_ascents = "#{pathname.cleanpath}/".scan(/\.\.\//).size
+        num_needy_ascents = Pathname(needy_path).cleanpath.to_s.split(File::SEPARATOR).size - 1
+        num_support_ascents - num_needy_ascents
+      end
+
+      def add_metadata_file
+        directories = @layers.map do |layer|
+          layer.path_from_hoard
+        end
+        data = {'load_path' => directories}
+        open File.join(hoard_path, 'metadata.yml'), 'w' do |file|
+          file.puts data.to_yaml
+        end
       end
     end
   end

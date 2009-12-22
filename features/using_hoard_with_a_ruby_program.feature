@@ -11,7 +11,7 @@ Feature: Using hoard with a ruby program
       require 'hoard'
       Hoard.init(:create => ENV['HOARD'])
 
-      $:.replace(['lib'])
+      $:.replace(['./lib'])
 
       Hoard.ready
 
@@ -34,7 +34,7 @@ Feature: Using hoard with a ruby program
     Then the output should be:
       """
       program run
-      hoard/1
+      ./hoard/1
       """
 
   Scenario: Running the program without creating the hoard

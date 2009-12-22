@@ -26,6 +26,11 @@ describe Hoard::Base do
       hoard.hoard_path.should == 'hoard'
     end
 
+    it "should add no support files by default" do
+      hoard = make_hoard
+      hoard.support_files.should == {}
+    end
+
     it "should set the #creating? flag to true, if the :create option is true" do
       hoard = make_hoard(:create => true)
       hoard.should be_creating
@@ -92,12 +97,16 @@ describe Hoard::Base do
 
       describe "when the hoard directory exists" do
         before do
-          FileUtils.mkdir_p 'HOARD/1'
+          FileUtils.mkdir_p 'A'
+          FileUtils.touch 'A/file'
+          @load_path << 'A'
+          @hoard.create
         end
 
         it "should use the hoard" do
+          @load_path.clear
           @hoard.ready
-          @load_path.should == ['HOARD/1']
+          @load_path.should == ['./HOARD/1']
         end
 
         it "should not exit" do
@@ -117,7 +126,7 @@ describe Hoard::Base do
     # Create a file at the given path, creating parent directories as
     # needed.
     #
-    def write_file(path, content)
+    def write_file(path, content=path)
       FileUtils.mkdir_p File.dirname(path)
       open(path, 'w'){|f| f.print content}
     end
@@ -191,6 +200,63 @@ describe Hoard::Base do
         File.read('HOARD/3/a').should == 'a'
       end
     end
+
+    describe "when support files are specified" do
+      before do
+        @load_path << 'A' << 'B'
+      end
+
+      it "should add all the specified support files for a given load path directory" do
+        write_file 'A/a'
+        write_file 'A/b'
+        write_file 'a_support'
+        write_file 'b_support'
+        @hoard.support_files = {
+          'A' => {
+            'a' => '../a_support',
+            'b' => '../b_support',
+          }
+        }
+        @hoard.create
+        File.read('HOARD/1/__hoard__/a').should == 'A/a'
+        File.read('HOARD/1/__hoard__/b').should == 'A/b'
+        File.read('HOARD/1/a_support').should == 'a_support'
+        File.read('HOARD/1/b_support').should == 'b_support'
+      end
+
+      it "should add support files for all the given load path directories" do
+        write_file 'A/a'
+        write_file 'B/b'
+        write_file 'a_support'
+        write_file 'b_support'
+        @hoard.support_files = {
+          'A' => {'a' => '../a_support'},
+          'B' => {'b' => '../b_support'},
+        }
+        @hoard.create
+        File.read('HOARD/1/__hoard__/a').should == 'A/a'
+        File.read('HOARD/1/__hoard__/b').should == 'B/b'
+        File.read('HOARD/1/a_support').should == 'a_support'
+        File.read('HOARD/1/b_support').should == 'b_support'
+      end
+
+      it "should automatically create directories for the support file symlinks" do
+        write_file 'A/a'
+        write_file 'support/file'
+        @hoard.support_files = {'A' => {'a' => '../support/file'}}
+        @hoard.create
+        File.read('HOARD/1/__hoard__/a').should == 'A/a'
+        File.read('HOARD/1/support/file').should == 'support/file'
+      end
+
+      it "should set the layer paths in the hoard metadata file" do
+        write_file 'A/a'
+        write_file 'a_support'
+        @hoard.support_files = {'A' => {'a' => '../a_support'}}
+        @hoard.create
+        YAML.load_file('HOARD/metadata.yml')['load_path'].should == ['1/__hoard__']
+      end
+    end
   end
 
   describe "#use" do
@@ -198,32 +264,19 @@ describe Hoard::Base do
       @hoard = make_hoard(:hoard_path => 'HOARD')
     end
 
-    it "should not modify the load path if the hoard directory doesn't exist" do
+    it "should set the load path from the hoard metadata file" do
+      data = {'load_path' => ['1', '2/__hoard__']}
+      FileUtils.mkdir_p 'HOARD'
+      open('HOARD/metadata.yml', 'w'){|f| f.puts data.to_yaml}
+      @hoard.use
+      @load_path.should == ['./HOARD/1', './HOARD/2/__hoard__']
+    end
+
+    it "should not modify the load path if the metadata file doesn't exist" do
       @load_path << 'original'
+      FileUtils.mkdir_p 'HOARD'
       @hoard.use
       @load_path.should == ['original']
-    end
-
-    it "should not modify the load path if no hoard layers were found" do
-      @load_path << 'original'
-      FileUtils.mkdir_p 'HOARD/X'
-      @hoard.use
-      @load_path.should == ['original']
-    end
-
-    it "should set the load path to the hoard layer directories, sorted numerically" do
-      Dir.mkdir 'HOARD'
-      (1..100).sort_by{rand}.each{|i| Dir.mkdir "HOARD/#{i}"}
-      @hoard.use
-      @load_path.should == (1..100).map{|i| "HOARD/#{i}"}
-    end
-
-    it "should not include directories in the hoard which aren't named with a number" do
-      FileUtils.mkdir_p "HOARD/1"
-      FileUtils.mkdir_p "HOARD/2A"
-      FileUtils.mkdir_p "HOARD/X"
-      @hoard.use
-      @load_path.should == ['HOARD/1']
     end
   end
 
