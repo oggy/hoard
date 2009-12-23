@@ -8,13 +8,19 @@ Feature: Support Files
     Given a ruby program "program.rb" containing:
       """
       require 'hoard'
-      Hoard.init :create => ENV['HOARD'],
-                 :support_files => {'lib' => {'mylib.rb' => '../data/message'}}
+      Hoard.init 'config.yml', :create => ENV['HOARD']
 
       $:.replace(['./lib'])
       Hoard.ready
       require 'mylib'
       puts Mylib::MESSAGE
+      """
+    And a file "config.yml" containing:
+      """
+      support_files:
+        lib:
+          mylib.rb:
+            ../data/message
       """
     And a file "lib/mylib.rb" containing:
       """

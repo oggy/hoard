@@ -18,12 +18,27 @@ describe Hoard do
     end
 
     it "should initialize a hoard of the given type by default" do
-      Hoard.init(:test)
+      Hoard.init(:type => :test)
       Hoard.hoard.should be_a(Hoard::Test)
     end
 
     it "should pass any given options to the hoard" do
-      Hoard.init(:test, :a => 1)
+      Hoard.init(:type => :test, :a => 1)
+      Hoard.hoard.options[:type].should == :test
+      Hoard.hoard.options[:a].should == 1
+    end
+
+    it "should allow a cascade of configurations" do
+      Hoard.init({:type => :test, :a => 1}, {:a => 2})
+      Hoard.hoard.options[:type].should == :test
+      Hoard.hoard.options[:a].should == 2
+    end
+
+    it "should look for a YAML file if a file name is given" do
+      options = {:a => 1}
+      open('config.yml', 'w'){|f| f.puts options.to_yaml}
+      Hoard.init({:type => :test}, 'config.yml')
+      Hoard.hoard.options[:type].should == :test
       Hoard.hoard.options[:a].should == 1
     end
   end

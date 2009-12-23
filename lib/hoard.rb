@@ -8,14 +8,22 @@ module Hoard
     #
     # Initialize Hoard.
     #
-    # TODO: document
+    # Each argument is either a hash of options or the name of a YAML
+    # file which contains such a hash.  Options in later arguments
+    # override earlier ones.
+    #
+    # Options are below, and may be given by either a string or symbol
+    # key.
+    #
+    # TODO: document the options
     #
     def init(*args)
-      (0..2).include?(args.length) or
-        raise ArgumentError, "wrong number of arguments (#{args.length} for 0..2)"
-      options = args.last.is_a?(Hash) ? args.pop : {}
-      options[:create] = creating? if !options.key?(:create)
-      @hoard = type_to_class(args.first || :base).new(options)
+      config = {}
+      args.each do |arg|
+        merge_config(config, arg)
+      end
+      config[:create] = creating? if !config.key?(:create)
+      @hoard = type_to_class(config[:type] || :base).new(config)
     end
 
     #
@@ -65,6 +73,16 @@ module Hoard
     end
 
     private  # -------------------------------------------------------
+
+    def merge_config(master_config, config)
+      if config.is_a?(String)
+        require 'yaml'
+        config = YAML.load_file(config)
+      end
+      config.each do |key, value|
+        master_config[key.to_sym] = value
+      end
+    end
 
     def type_to_class(type)
       type = type.to_s
