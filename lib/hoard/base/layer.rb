@@ -90,13 +90,30 @@ module Hoard
       end
 
       #
-      # Return the target of the symlink at +path+, or nil if no such
-      # symlink exists.
+      # Return the target that +path+ points at in this layer, or nil
+      # if +path+ is not in this layer.
       #
       def target_of(path)
-        file?(path) or
-          return nil
-        File.readlink(path_of(path))
+        # `path' may not be the symlink - perhaps an ancestor
+        # directory points to the target.
+        #
+        # e.g., if the directory "LAYER/dir" points to "/usr/lib/dir",
+        # and "/usr/lib/dir/file" exists, then the
+        # target_of("dir/file") is "/usr/lib/dir/file".
+        current = self.path.dup
+        segments = path.split(File::SEPARATOR)
+        while (segment = segments.shift)
+          current << File::SEPARATOR << segment
+          if File.symlink?(current)
+            segments.unshift File.readlink(current)
+            return segments.join(File::SEPARATOR)
+          elsif File.directory?(current)
+            next
+          else
+            return nil
+          end
+        end
+        nil
       end
 
       #

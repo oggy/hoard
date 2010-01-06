@@ -240,6 +240,17 @@ describe Hoard::Base do
         File.read('HOARD/1/b_support').should == 'b_support'
       end
 
+      it "should successfully add support files for paths inside directories that are symlinked in the hoard" do
+        write_file 'A/dir/file'
+        write_file 'support'
+        @hoard.support_files = {
+          'A' => {'dir/file' => '../../support'},
+        }
+        @hoard.create
+        File.read('HOARD/1/__hoard__/dir/file').should == 'A/dir/file'
+        File.read('HOARD/1/support').should == 'support'
+      end
+
       it "should automatically create directories for the support file symlinks" do
         write_file 'A/a'
         write_file 'support/file'
