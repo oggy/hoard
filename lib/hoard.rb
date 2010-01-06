@@ -2,6 +2,7 @@ require 'pathname'
 require 'fileutils'
 
 require 'hoard/base'
+require 'hoard/rubygems'
 
 module Hoard
   class << self

@@ -12,8 +12,9 @@ module Hoard
     #  * :hoard_path - the path of the hoard directory.
     #  * :load_path - the load path array that will be modified when
     #    the hoard is #use-d.  (Intended for testing hoard classes.)
+    #  * :support_files - TODO
     #
-    def initialize(options={}, &block)
+    def initialize(options={})
       @hoard_path = options[:hoard_path] || 'hoard'
       @creating = options[:create] || false
       @support_files = options[:support_files] || {}

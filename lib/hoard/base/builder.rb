@@ -78,7 +78,11 @@ module Hoard
         begin
           layer = next_layer(layer)
         end while layer.directory?(path)
-        layer.add(path, target)
+        layer.add(path, target) do |colliding_path, colliding_target|
+          layer.file?(colliding_path) or
+            raise "bug: invariant busted"
+          # file/file collision - drop it
+        end
       end
 
       def resolve_file_directory_collision(layer, path, target)

@@ -24,7 +24,7 @@ Then /^"(.*?)" should not exist$/ do |path|
   File.should_not exist(path)
 end
 
-Then /^"(.*?)" should be a symlink to "(.*?)"$/ do |symlink, target|
+Then /^"(.*?)" should be a symlink to "([^\"]*?)"$/ do |symlink, target|
   File.should be_symlink(symlink)
   absolute_target = File.expand_path(target)
   relative_target = Pathname(target).relative_path_from(Pathname(symlink)).to_s

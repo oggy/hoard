@@ -122,15 +122,6 @@ describe Hoard::Base do
       @hoard = make_hoard(:hoard_path => 'HOARD')
     end
 
-    #
-    # Create a file at the given path, creating parent directories as
-    # needed.
-    #
-    def write_file(path, content=path)
-      FileUtils.mkdir_p File.dirname(path)
-      open(path, 'w'){|f| f.print content}
-    end
-
     it "should create the hoard directory" do
       @hoard.create
       File.should be_directory('HOARD')
@@ -198,6 +189,16 @@ describe Hoard::Base do
         File.read('HOARD/1/a/b/c').should == 'c'
         File.read('HOARD/2/a/b').should == 'b'
         File.read('HOARD/3/a').should == 'a'
+      end
+
+      it "should drop a file if it collides with an existing directory in one layer, and a file in another" do
+        write_file 'A/x/file', 'A/x/file'
+        write_file 'B/x', 'B/x'
+        write_file 'C/x', 'C/x'
+        @load_path << 'A' << 'B' << 'C'
+        @hoard.create
+        File.read('HOARD/1/x/file').should == 'A/x/file'
+        File.read('HOARD/2/x').should == 'B/x'
       end
     end
 

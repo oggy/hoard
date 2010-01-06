@@ -8,6 +8,17 @@ module TemporaryDirectory
     "#{ROOT}/tmp"
   end
 
+  #
+  # Write +content+ to +path+ under the temporary directory.
+  #
+  # The parent directory is created if necessary.
+  #
+  def write_file(path, content=path)
+    path = File.join(temporary_directory, path)
+    FileUtils.mkdir_p File.dirname(path)
+    open(path, 'w'){|f| f.print content}
+  end
+
   private  # ---------------------------------------------------------
 
   def init_temporary_directory
