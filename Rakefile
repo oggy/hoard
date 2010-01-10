@@ -5,15 +5,20 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "hoard"
-    gem.summary = "Speed up your ruby programs by caching your load path."
+    gem.summary = "Speeds up the load time of Ruby programs."
     gem.description = <<-EOS.gsub(/^ *\|/, '')
-      |One of rubygems\' greatest inefficiencies is that having many
-      |gems installed leads to a gigantic load path.  Requiring a file
-      |can thus take a huge number of stat(2) calls to check each
-      |directory for the right file, with one of many permissible
-      |extensions.  Hoard creates a cache of files, and replaces your
-      |load path with a single directory, which can dramatically speed
-      |up the load time of your application.
+      |When your load path is long, each #require or #load call must
+      |stat a large number of files before it can load the file.
+      |Since a long load path usually goes hand-in-hand with loading a
+      |large number of files, this can quickly lead to intolerable
+      |load times.
+      |
+      |Hoard helps by creating a minimal directory of symlinks which
+      |point to the directories in your load path.  It can accomodate
+      |libraries whose load path directories collide, and which
+      |require support files outside their load path directories.
+      |Extra support is included for programs using Rubygems and Rails
+      |applications.
     EOS
     gem.email = "george.ogata@gmail.com"
     gem.homepage = "http://github.com/oggy/hoard"
