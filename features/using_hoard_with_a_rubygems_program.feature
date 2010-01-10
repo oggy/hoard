@@ -16,6 +16,7 @@ Feature: Using hoard with a rubygems program
       | bin/hoard-test-gem-two      | require 'hoard-test-gem-two'; puts B |
       | lib/hoard-test-gem-two.rb   | require 'hoard-test-gem-two/a'       |
       | lib/hoard-test-gem-two/a.rb | B = 2                                |
+      | data/file                   | .                                    |
     And gem "hoard-test-gem-two" has a require path "lib"
     And gem "hoard-test-gem-two" has a require path "bin"
 
@@ -37,10 +38,11 @@ Feature: Using hoard with a rubygems program
       """
     And a file "hoard.yml" containing:
       """
-        mode: rubygems
+        type: rubygems
         gem_support_files:
           hoard-test-gem-two:
-            bin/hoard-test-gem-two: ../lib/hoard-test-gem-two.rb
+            bin:
+              hoard-test-gem-two: ../data/file
       """
 
   Scenario: Creating the hoard
@@ -52,7 +54,8 @@ Feature: Using hoard with a rubygems program
     And "hoard/1/hoard-test-gem-one.rb" should be a symlink to "lib/hoard-test-gem-one.rb" in gem "hoard-test-gem-one"
     And "hoard/1/hoard-test-gem-two" should be a symlink to "lib/hoard-test-gem-two" in gem "hoard-test-gem-two"
     And "hoard/1/hoard-test-gem-two.rb" should be a symlink to "lib/hoard-test-gem-two.rb" in gem "hoard-test-gem-two"
-    And "hoard/2/hoard-test-gem-two" should be a symlink to "bin/hoard-test-gem-two" in gem "hoard-test-gem-two"
+    And "hoard/2/__hoard__/hoard-test-gem-two" should be a symlink to "bin/hoard-test-gem-two" in gem "hoard-test-gem-two"
+    And "hoard/2/data/file" should be a symlink to "data/file" in gem "hoard-test-gem-two"
 
   Scenario: Using the hoard
     Given the "HOARD" environment variable is set
@@ -63,7 +66,7 @@ Feature: Using hoard with a rubygems program
       """
       program run
       ./hoard/1
-      ./hoard/2
+      ./hoard/2/__hoard__
       """
 
   Scenario: Running the program without creating the hoard

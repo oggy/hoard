@@ -11,7 +11,7 @@ module Hoard
     #
     def initialize(options={})
       super
-      @gem_support_files = {}
+      @gem_support_files = options[:gem_support_files] || {}
       @source_index = options[:source_index] || Gem.source_index
     end
 
