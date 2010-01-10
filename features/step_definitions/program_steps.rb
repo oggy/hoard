@@ -6,12 +6,20 @@ Given /^the "(.*?)" environment variable is unset$/ do |name|
   env.delete(name)
 end
 
-Given /^the hoard has been created$/ do
-  `#{env_string} #{ruby} #{path} 2>&1`
+When /^we switch to the "(.*?)" directory$/ do |path|
+  Dir.chdir path
 end
 
-When /^"(.*?)" is run$/ do |path|
-  @output = `#{env_string} #{ruby} #{path} 2>&1`
+When /^"(.*?)" is run$/ do |command|
+  command = command.dup  # else cuke output is screwed up
+  if command.gsub!(/^ruby /, '')
+    command.insert(0, "#{ruby} ")
+  elsif command.gsub!(/^rake /, '')
+    dir, base = File.split(ruby)
+    rake = "#{dir}/#{base.sub(/ruby/, 'rake')}"
+    command.insert(0, "#{rake} -I \"#{ROOT}/lib\" ")
+  end
+  @output = `#{env_string} #{command} 2>&1`
   $?.success? or
     raise "command failed - output: #{@output}"
 end
@@ -20,12 +28,16 @@ Then /^there should be no output$/ do
   @output.should == ''
 end
 
-Then /^the output should be:/ do |output|
+Then /^the output should be:$/ do |output|
   @output.should == "#{output}\n"
 end
 
-Then /^the output should contain:/ do |output|
+Then /^the output should contain:$/ do |output|
   @output.should include(output)
+end
+
+Then /^the output should not contain "(.*?)"$/ do |output|
+  @output.should_not include(output)
 end
 
 module ProgramSteps

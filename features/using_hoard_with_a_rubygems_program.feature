@@ -47,7 +47,7 @@ Feature: Using hoard with a rubygems program
 
   Scenario: Creating the hoard
     Given the "HOARD" environment variable is set
-    When "program.rb" is run
+    When "ruby program.rb" is run
     Then there should be no output
     And "hoard" should be a directory
     And "hoard/1/hoard-test-gem-one" should be a symlink to "lib/hoard-test-gem-one" in gem "hoard-test-gem-one"
@@ -59,9 +59,9 @@ Feature: Using hoard with a rubygems program
 
   Scenario: Using the hoard
     Given the "HOARD" environment variable is set
-    And "program.rb" is run
+    And "ruby program.rb" is run
     And the "HOARD" environment variable is unset
-    When "program.rb" is run
+    When "ruby program.rb" is run
     Then the output should be:
       """
       program run
@@ -70,7 +70,7 @@ Feature: Using hoard with a rubygems program
       """
 
   Scenario: Running the program without creating the hoard
-    When "program.rb" is run
+    When "ruby program.rb" is run
     Then the output should contain:
       """
       program run

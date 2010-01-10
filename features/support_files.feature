@@ -34,9 +34,9 @@ Feature: Support Files
       Message found.
       """
     And the "HOARD" environment variable is set
-    And "program.rb" is run
+    And "ruby program.rb" is run
     When the "HOARD" environment variable is unset
-    And "program.rb" is run
+    And "ruby program.rb" is run
     Then the output should be:
       """
       Message found.

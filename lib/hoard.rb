@@ -3,6 +3,7 @@ require 'fileutils'
 
 require 'hoard/base'
 require 'hoard/rubygems'
+require 'hoard/rails'
 
 module Hoard
   class << self
