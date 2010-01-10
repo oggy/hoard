@@ -80,9 +80,12 @@ module Hoard
     private  # -------------------------------------------------------
 
     def merge_config(master_config, config)
-      if config.is_a?(String)
+      case config
+      when String
         require 'yaml'
         config = YAML.load_file(config)
+      when Symbol
+        config = {:type => config}
       end
       config.each do |key, value|
         master_config[key.to_sym] = value
