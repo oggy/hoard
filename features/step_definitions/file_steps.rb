@@ -16,11 +16,11 @@ Given /^a ruby program "(.*?)" containing:$/ do |path, content|
   end
 end
 
-Given /^"(.*?)" is added to the file "(.*)"$/ do |line, path|
+Given /^"(.*?)" is added to the file "([^\"]*)"$/ do |line, path|
   open(path, 'a'){|f| f.puts line}
 end
 
-Given /^the following is added to the file "(.*?)" after the line containing "(.*?)":$/ do |path, locator, content|
+Given /^"(.*?)" is added to the file "(.*?)" after the line containing "(.*?)"$/ do |content, path, locator|
   lines = []
   open(path) do |file|
     looking = true

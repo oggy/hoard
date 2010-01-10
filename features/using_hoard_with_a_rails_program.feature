@@ -7,13 +7,9 @@ Feature: Using Hoard With A Rails Program
   Background:
     Given a Rails application "app"
     And we switch to the "app" directory
-    And "rake db:migrate" is run
+    And "require 'hoard/rails'" is added to the file "config/environment.rb" after the line containing "'boot'"
     And "require 'hoard/rails/tasks'" is added to the file "Rakefile"
-    And the following is added to the file "config/environment.rb" after the line containing "'boot'":
-      """
-      require 'hoard'
-      Hoard.init :rails
-      """
+    And "rake db:migrate" is run
 
   Scenario: Creating the hoard
     Given the "HOARD" environment variable is set
@@ -22,7 +18,7 @@ Feature: Using Hoard With A Rails Program
 
   Scenario: Using the hoard
     Given "rake hoard" is run
-    When "script/runner 'puts $:'" is run
+    When "ruby script/runner 'puts $:'" is run
     Then the output should be:
       """
       ./hoard/1
@@ -32,5 +28,5 @@ Feature: Using Hoard With A Rails Program
     # Rubygems adds bin directories to load paths.
 
   Scenario: Running the program without creating the hoard
-    When "script/runner 'puts $:'" is run
+    When "ruby script/runner 'puts $:'" is run
     Then the output should not contain "./hoard"

@@ -1,4 +1,5 @@
 require 'hoard'
+
 require 'spec'
 require 'rspec_outlines'
 require 'mocha'

@@ -13,7 +13,7 @@ end
 When /^"(.*?)" is run$/ do |command|
   command = command.dup  # else cuke output is screwed up
   if command.gsub!(/^ruby /, '')
-    command.insert(0, "#{ruby} ")
+    command.insert(0, "#{ruby} -I \"#{ROOT}/lib\" ")
   elsif command.gsub!(/^rake /, '')
     dir, base = File.split(ruby)
     rake = "#{dir}/#{base.sub(/ruby/, 'rake')}"

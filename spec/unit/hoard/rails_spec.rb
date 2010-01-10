@@ -1,5 +1,8 @@
 require 'spec_helper'
 
+$HOARD_TEST = true
+require 'hoard/rails'
+
 describe Hoard::Rails do
   before do
     @load_path = []
@@ -16,7 +19,7 @@ describe Hoard::Rails do
     Hoard::Rails.new(defaults.merge(options))
   end
 
-  describe "#initialize" do
+  describe ".read_config" do
     before do
       Object.const_set(:Rails, OpenStruct.new)
       Rails.root = 'RAILS_ROOT'
@@ -28,10 +31,10 @@ describe Hoard::Rails do
 
     it "should look for configuration in RAILS_ROOT/config/hoard.yml" do
       write_file 'RAILS_ROOT/config/hoard.yml', <<-EOS.gsub(/^ *\|/, '')
-        |creating: true
+        |autoready: false
       EOS
-      hoard = make_hoard
-      hoard.should be_creating
+      config = Hoard::Rails.read_config
+      config.should == {:autoready => false}
     end
   end
 end
