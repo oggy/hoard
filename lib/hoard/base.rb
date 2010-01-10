@@ -8,7 +8,7 @@ module Hoard
     #
     # Options:
     #
-    #  * :create - whether or not to create the hoard.
+    #  * :creating - whether or not we should create the hoard.
     #  * :hoard_path - the path of the hoard directory.
     #  * :load_path - the load path array that will be modified when
     #    the hoard is #use-d.  (Intended for testing hoard classes.)
@@ -20,7 +20,7 @@ module Hoard
     #
     def initialize(options={})
       @hoard_path = options[:hoard_path] || 'hoard'
-      @creating = options[:create] || false
+      @creating = options[:creating] || false
       @support_files = options[:support_files] || {}
       @needy_files_optional = options[:needy_files_optional] || false
 
@@ -89,9 +89,7 @@ module Hoard
     #
     # Set whether or not we should create the hoard.
     #
-    def create=(value)
-      @creating = value
-    end
+    attr_writer :creating
 
     private # --------------------------------------------------------
 

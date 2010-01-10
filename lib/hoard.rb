@@ -24,10 +24,10 @@ module Hoard
       args.each do |arg|
         merge_config(config, arg)
       end
-      if config.key?(:create)
-        @creating = config[:create]
+      if config.key?(:creating)
+        @creating = config[:creating]
       else
-        config[:create] = creating?
+        config[:creating] = creating?
       end
       @hoard = type_to_class(config[:type] || :base).new(config)
     end
@@ -59,12 +59,10 @@ module Hoard
     #
     # Usually set by a rake task or similar.
     #
-    def create=(value)
-      if hoard
+    def creating=(value)
+      hoard and
         raise "Hoard already initialized"
-      else
-        @creating = value
-      end
+      @creating = value
     end
 
     #

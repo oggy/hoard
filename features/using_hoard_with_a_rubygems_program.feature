@@ -26,7 +26,7 @@ Feature: Using hoard with a rubygems program
       Gem.use_paths('home', ['gem_repo'])
 
       require 'hoard'
-      Hoard.init('hoard.yml', :create => ENV['HOARD'])
+      Hoard.init('hoard.yml', :creating => ENV['HOARD'])
 
       require 'hoard-test-gem-one'
       require 'hoard-test-gem-two'

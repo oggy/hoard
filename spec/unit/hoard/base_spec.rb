@@ -41,13 +41,13 @@ describe Hoard::Base do
       hoard.needy_files_optional.should be_false
     end
 
-    it "should set the #creating? flag to true, if the :create option is true" do
-      hoard = make_hoard(:create => true)
+    it "should set the #creating? flag to true, if the :creating option is true" do
+      hoard = make_hoard(:creating => true)
       hoard.should be_creating
     end
 
-    it "should set the #creating? flag to false, if the :create option is false" do
-      hoard = make_hoard(:create => false)
+    it "should set the #creating? flag to false, if the :creating option is false" do
+      hoard = make_hoard(:creating => false)
       hoard.should_not be_creating
     end
 
@@ -67,12 +67,12 @@ describe Hoard::Base do
       it "should not modify the load path" do
         Dir.mkdir 'original'
         @load_path << 'original'
-        make_hoard(:create => true)
+        make_hoard(:creating => true)
         @load_path.should == ['original']
       end
 
       it "should not prevent further modifications to the load path" do
-        make_hoard(:create => true)
+        make_hoard(:creating => true)
         @load_path << 'new'
         @load_path.last.should == 'new'
       end
@@ -83,12 +83,12 @@ describe Hoard::Base do
         it "should not modify the load path" do
           Dir.mkdir 'original'
           @load_path << 'original'
-          make_hoard(:create => false)
+          make_hoard(:creating => false)
           @load_path.should == ['original']
         end
 
         it "should not prevent further modifications to the load path" do
-          make_hoard(:create => false)
+          make_hoard(:creating => false)
           @load_path << 'new'
           @load_path.last.should == 'new'
         end
@@ -102,12 +102,12 @@ describe Hoard::Base do
 
         it "should set the load path to the layers of the hoard" do
           @load_path.clear
-          make_hoard(:create => false)
+          make_hoard(:creating => false)
           @load_path.should == ['./HOARD/1']
         end
 
         it "should prevent further modifications to the load path" do
-          make_hoard(:create => false)
+          make_hoard(:creating => false)
           @load_path << 'new'
           @load_path.last.should_not == 'new'
         end
@@ -118,7 +118,7 @@ describe Hoard::Base do
   describe "#ready" do
     describe "when creating the hoard" do
       before do
-        @hoard = make_hoard(:create => true)
+        @hoard = make_hoard(:creating => true)
       end
 
       it "should create the hoard" do
@@ -134,7 +134,7 @@ describe Hoard::Base do
 
     describe "when not creating the hoard" do
       before do
-        @hoard = make_hoard(:create => false, :hoard_path => 'HOARD')
+        @hoard = make_hoard(:creating => false, :hoard_path => 'HOARD')
       end
 
       describe "when the hoard has not been created" do
@@ -359,10 +359,10 @@ describe Hoard::Base do
     end
   end
 
-  describe "#create=" do
+  describe "#creating=" do
     it "should set the value of the #creating? flag" do
       hoard = make_hoard
-      hoard.create = true
+      hoard.creating = true
       hoard.should be_creating
     end
   end

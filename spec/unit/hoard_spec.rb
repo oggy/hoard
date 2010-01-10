@@ -47,40 +47,40 @@ describe Hoard do
       Hoard.hoard.options[:a].should == 2
     end
 
-    describe "when a :create option is given" do
+    describe "when a :creating option is given" do
       it "should set the #creating? flag to true if the option is true" do
-        Hoard.init(:create => true)
+        Hoard.init(:creating => true)
         Hoard.should be_creating
       end
 
       it "should set the #creating? flag to false if the option is false" do
-        Hoard.init(:create => false)
+        Hoard.init(:creating => false)
         Hoard.should_not be_creating
       end
     end
 
-    describe "when a :create option is not given" do
+    describe "when a :creating option is not given" do
       it "should set the #creating? flag to true, if Hoard.creating? is true" do
-        Hoard.create = true
+        Hoard.creating = true
         Hoard.init
         Hoard.should be_creating
       end
 
       it "should set the #creating? flag to false, if Hoard.creating? is false" do
-        Hoard.create = false
+        Hoard.creating = false
         Hoard.init
         Hoard.should_not be_creating
       end
     end
   end
 
-  describe "#create=" do
+  describe "#creating=" do
     describe "before Hoard is initialized" do
       it "should set the value of the creating flag" do
-        Hoard.create = true
+        Hoard.creating = true
         Hoard.should be_creating
 
-        Hoard.create = false
+        Hoard.creating = false
         Hoard.should_not be_creating
       end
     end
@@ -91,7 +91,7 @@ describe Hoard do
       end
 
       it "should raise an error" do
-        lambda{Hoard.create = true}.should raise_error(RuntimeError)
+        lambda{Hoard.creating = true}.should raise_error(RuntimeError)
       end
     end
   end

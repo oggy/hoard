@@ -8,7 +8,7 @@ Feature: Support Files
     Given a ruby program "program.rb" containing:
       """
       require 'hoard'
-      Hoard.init 'config.yml', :create => ENV['HOARD']
+      Hoard.init 'config.yml', :creating => ENV['HOARD']
 
       $:.replace(['./lib'])
       Hoard.ready

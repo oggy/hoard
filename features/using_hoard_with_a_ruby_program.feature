@@ -9,7 +9,7 @@ Feature: Using hoard with a ruby program
     And a ruby program "program.rb" containing:
       """
       require 'hoard'
-      Hoard.init(:create => ENV['HOARD'])
+      Hoard.init(:creating => ENV['HOARD'])
 
       $:.replace(['./lib'])
 

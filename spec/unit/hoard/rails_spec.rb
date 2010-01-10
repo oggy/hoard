@@ -28,7 +28,7 @@ describe Hoard::Rails do
 
     it "should look for configuration in RAILS_ROOT/config/hoard.yml" do
       write_file 'RAILS_ROOT/config/hoard.yml', <<-EOS.gsub(/^ *\|/, '')
-        |create: true
+        |creating: true
       EOS
       hoard = make_hoard
       hoard.should be_creating
