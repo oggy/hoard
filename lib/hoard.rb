@@ -1,6 +1,8 @@
 require 'pathname'
 require 'fileutils'
 
+require 'hoard/error'
+
 require 'hoard/base'
 require 'hoard/rubygems'
 require 'hoard/rails'
@@ -20,6 +22,7 @@ module Hoard
     # TODO: document the options
     #
     def init(*args)
+      guard :init, "Hoard.init already called"
       config = {}
       args.each do |arg|
         merge_config(config, arg)
@@ -48,6 +51,7 @@ module Hoard
     # is replaced with the hoard directory.
     #
     def ready
+      guard :ready, "Hoard.ready already called"
       @hoard or
         raise RuntimeError, "Hoard not initialized.  Call Hoard::Base.init or that of a Hoard::Base subclass."
       @hoard.ready
@@ -76,7 +80,25 @@ module Hoard
       end
     end
 
+    #
+    # Reset Hoard.
+    #
+    # (Intended for testing.)
+    #
+    def reset!
+      @hoard = nil
+      @creating = nil
+      @guards = nil
+    end
+
     private  # -------------------------------------------------------
+
+    def guard(name, error_message)
+      @guards ||= {}
+      @guards[name] and
+        raise Error, error_message
+      @guards[name] = true
+    end
 
     def merge_config(master_config, config)
       case config

@@ -72,6 +72,11 @@ describe Hoard do
         Hoard.should_not be_creating
       end
     end
+
+    it "should raise an error if called more than once" do
+      Hoard.init
+      lambda{Hoard.init}.should raise_error(Hoard::Error)
+    end
   end
 
   describe "#creating=" do

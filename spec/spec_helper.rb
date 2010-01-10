@@ -12,4 +12,7 @@ Spec::Runner.configure do |config|
   config.mock_with :mocha
   config.include TemporaryDirectory
   config.include TemporaryValues
+  config.after do
+    Hoard.reset!
+  end
 end
