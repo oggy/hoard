@@ -45,6 +45,64 @@ describe Hoard::Base do
       hoard = make_hoard
       hoard.should_not be_creating
     end
+
+    describe "when creating the hoard" do
+      before do
+        # Create the hoard directory too, to make sure that doesn't
+        # affect things.
+        write_file('HOARD/metadata.yml', {'load_path' => ['1']}.to_yaml)
+        FileUtils.mkdir_p 'HOARD/1'
+      end
+
+      it "should not modify the load path" do
+        Dir.mkdir 'original'
+        @load_path << 'original'
+        make_hoard(:create => true)
+        @load_path.should == ['original']
+      end
+
+      it "should not prevent further modifications to the load path" do
+        make_hoard(:create => true)
+        @load_path << 'new'
+        @load_path.last.should == 'new'
+      end
+    end
+
+    describe "when not creating the hoard" do
+      describe "when the hoard does not exist" do
+        it "should not modify the load path" do
+          Dir.mkdir 'original'
+          @load_path << 'original'
+          make_hoard(:create => false)
+          @load_path.should == ['original']
+        end
+
+        it "should not prevent further modifications to the load path" do
+          make_hoard(:create => false)
+          @load_path << 'new'
+          @load_path.last.should == 'new'
+        end
+      end
+
+      describe "when the hoard exists" do
+        before do
+          write_file('HOARD/metadata.yml', {'load_path' => ['1']}.to_yaml)
+          FileUtils.mkdir_p 'HOARD/1'
+        end
+
+        it "should set the load path to the layers of the hoard" do
+          @load_path.clear
+          make_hoard(:create => false)
+          @load_path.should == ['./HOARD/1']
+        end
+
+        it "should prevent further modifications to the load path" do
+          make_hoard(:create => false)
+          @load_path << 'new'
+          @load_path.last.should_not == 'new'
+        end
+      end
+    end
   end
 
   describe "#ready" do
@@ -62,13 +120,6 @@ describe Hoard::Base do
         @hoard.ready
         @would_have_exited.should be_true
       end
-
-      it "should not modify the load path" do
-        Dir.mkdir 'original'
-        @load_path << 'original'
-        @hoard.ready
-        @load_path.should == ['original']
-      end
     end
 
     describe "when not creating the hoard" do
@@ -77,36 +128,9 @@ describe Hoard::Base do
       end
 
       describe "when the hoard has not been created" do
-        it "should not try to use the hoard" do
-          Dir.mkdir 'original'
-          @load_path << 'original'
-          @hoard.ready
-          @load_path.should == ['original']
-        end
-
-        it "should not exit" do
-          @hoard.ready
-          @would_have_exited.should be_false
-        end
-
         it "should not create the hoard" do
           @hoard.ready
           File.should_not be_directory('HOARD')
-        end
-      end
-
-      describe "when the hoard directory exists" do
-        before do
-          FileUtils.mkdir_p 'A'
-          FileUtils.touch 'A/file'
-          @load_path << 'A'
-          @hoard.create
-        end
-
-        it "should use the hoard" do
-          @load_path.clear
-          @hoard.ready
-          @load_path.should == ['./HOARD/1']
         end
 
         it "should not exit" do
@@ -268,27 +292,6 @@ describe Hoard::Base do
         @hoard.create
         YAML.load_file('HOARD/metadata.yml')['load_path'].should == ['1/__hoard__']
       end
-    end
-  end
-
-  describe "#use" do
-    before do
-      @hoard = make_hoard(:hoard_path => 'HOARD')
-    end
-
-    it "should set the load path from the hoard metadata file" do
-      data = {'load_path' => ['1', '2/__hoard__']}
-      FileUtils.mkdir_p 'HOARD'
-      open('HOARD/metadata.yml', 'w'){|f| f.puts data.to_yaml}
-      @hoard.use
-      @load_path.should == ['./HOARD/1', './HOARD/2/__hoard__']
-    end
-
-    it "should not modify the load path if the metadata file doesn't exist" do
-      @load_path << 'original'
-      FileUtils.mkdir_p 'HOARD'
-      @hoard.use
-      @load_path.should == ['original']
     end
   end
 

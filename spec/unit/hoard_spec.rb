@@ -41,19 +41,41 @@ describe Hoard do
       Hoard.hoard.options[:type].should == :test
       Hoard.hoard.options[:a].should == 1
     end
+
+    describe "when a :create option is given" do
+      it "should set the #creating? flag to true if the option is true" do
+        Hoard.init(:create => true)
+        Hoard.should be_creating
+      end
+
+      it "should set the #creating? flag to false if the option is false" do
+        Hoard.init(:create => false)
+        Hoard.should_not be_creating
+      end
+    end
+
+    describe "when a :create option is not given" do
+      it "should set the #creating? flag to true, if Hoard.creating? is true" do
+        Hoard.create = true
+        Hoard.init
+        Hoard.should be_creating
+      end
+
+      it "should set the #creating? flag to false, if Hoard.creating? is false" do
+        Hoard.create = false
+        Hoard.init
+        Hoard.should_not be_creating
+      end
+    end
   end
 
-  describe ".creating?" do
+  describe "#create=" do
     describe "before Hoard is initialized" do
-      it "should return the value of the creating flag if set" do
+      it "should set the value of the creating flag" do
         Hoard.create = true
         Hoard.should be_creating
 
         Hoard.create = false
-        Hoard.should_not be_creating
-      end
-
-      it "should default to false" do
         Hoard.should_not be_creating
       end
     end
@@ -63,31 +85,15 @@ describe Hoard do
         Hoard.init
       end
 
-      it "should return the value of the creating flag if set" do
-        Hoard.create = true
-        Hoard.should be_creating
-
-        Hoard.create = false
-        Hoard.should_not be_creating
-      end
-
-      it "should default to false" do
-        Hoard.should_not be_creating
+      it "should raise an error" do
+        lambda{Hoard.create = true}.should raise_error(RuntimeError)
       end
     end
+  end
 
-    describe "after Hoard is initialized, when the flag was set before Hoard was initialized" do
-      it "should return true if the flag was set to true" do
-        Hoard.create = true
-        Hoard.init
-        Hoard.should be_creating
-      end
-
-      it "should return false if the flag was set to false" do
-        Hoard.create = false
-        Hoard.init
-        Hoard.should_not be_creating
-      end
+  describe ".creating?" do
+    it "should default to false" do
+      Hoard.should_not be_creating
     end
   end
 end
