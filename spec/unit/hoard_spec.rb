@@ -73,9 +73,15 @@ describe Hoard do
       end
     end
 
-    it "should raise an error if called more than once" do
+    it "should raise a Hoard::Error if called more than once" do
       Hoard.init
       lambda{Hoard.init}.should raise_error(Hoard::Error)
+    end
+  end
+
+  describe ".ready" do
+    it "should raise a Hoard::Error if Hoard.init hasn't been called yet" do
+      lambda{Hoard.ready}.should raise_error(Hoard::Error)
     end
   end
 
@@ -95,8 +101,8 @@ describe Hoard do
         Hoard.init
       end
 
-      it "should raise an error" do
-        lambda{Hoard.creating = true}.should raise_error(RuntimeError)
+      it "should raise a Hoard::Error" do
+        lambda{Hoard.creating = true}.should raise_error(Hoard::Error)
       end
     end
   end

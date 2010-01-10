@@ -19,7 +19,7 @@ module Hoard
           support_spec.each do |needy_path, support_paths|
             Array(support_paths).each do |support_path|
               layer = layer_with_file(needy_path, directory) or
-                needy_files_optional ? next : raise("needy file not found: #{needy_path}")
+                needy_files_optional ? next : raise(Error, "needy file not found: #{needy_path}")
               num_ascents = num_ascents_required_for(needy_path, support_path) or
                 next
               layer.depth = num_ascents
@@ -31,7 +31,7 @@ module Hoard
               support_target = (needy_target.dirname + support_path).cleanpath.to_s
 
               File.exist?(support_target) or
-                raise "support file not found: #{support_target}"
+                raise Error, "support file not found: #{support_target}"
               FileUtils.mkdir_p File.dirname(support_link)
               File.symlink(support_target, support_link)
             end
@@ -86,7 +86,7 @@ module Hoard
         end while layer.directory?(path)
         layer.add(path, target) do |colliding_path, colliding_target|
           layer.file?(colliding_path) or
-            raise "bug: invariant busted"
+            raise Error, "bug: invariant busted"
           # file/file collision - drop it
         end
       end
@@ -138,7 +138,7 @@ module Hoard
       def num_ascents_required_for(needy_path, support_path)
         pathname = Pathname(support_path)
         pathname.relative? or
-          raise ArgumentError, "support file must be a relative path (to the needy file)"
+          raise Error, "support file for \"#{needy_path}\" must be a relative path to #{File.dirname(needy_path)}"
         num_support_ascents = "#{pathname.cleanpath}/".scan(/\.\.\//).size
         num_needy_ascents = Pathname(needy_path).cleanpath.to_s.split(File::SEPARATOR).size - 1
         num_support_ascents - num_needy_ascents

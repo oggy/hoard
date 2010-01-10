@@ -53,7 +53,7 @@ module Hoard
     def ready
       guard :ready, "Hoard.ready already called"
       @hoard or
-        raise RuntimeError, "Hoard not initialized.  Call Hoard::Base.init or that of a Hoard::Base subclass."
+        raise Error, "Hoard not initialized.  Call Hoard::Base.init or that of a Hoard::Base subclass."
       @hoard.ready
     end
 
@@ -65,7 +65,7 @@ module Hoard
     #
     def creating=(value)
       hoard and
-        raise "Hoard already initialized"
+        raise Error, "Hoard already initialized"
       @creating = value
     end
 

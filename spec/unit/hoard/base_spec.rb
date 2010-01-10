@@ -313,6 +313,13 @@ describe Hoard::Base do
         File.read('HOARD/1/support2').should == 'support2'
       end
 
+      it "should raise a Hoard::Error if a support file is not a relative path" do
+        write_file 'A/a'
+        write_file 'support'
+        @hoard.support_files = {'A' => {'a' => File.expand_path('support')}}
+        lambda{@hoard.create}.should raise_error(Hoard::Error)
+      end
+
       describe "when needy files are optional" do
         before do
           @hoard.needy_files_optional = true
@@ -323,15 +330,15 @@ describe Hoard::Base do
           @hoard.support_files = {
             'A' => {'missing' => '../support'}
           }
-          lambda{@hoard.create}.should_not raise_error(RuntimeError)
+          lambda{@hoard.create}.should_not raise_error
         end
 
-        it "should raise an error if a support file is missing" do
+        it "should raise a Hoard::Error if a support file is missing" do
           write_file 'A/file'
           @hoard.support_files = {
             'A' => {'file' => '../missing'}
           }
-          lambda{@hoard.create}.should raise_error(RuntimeError)
+          lambda{@hoard.create}.should raise_error(Hoard::Error)
         end
       end
 
@@ -340,20 +347,20 @@ describe Hoard::Base do
           @hoard.needy_files_optional = false
         end
 
-        it "should raise an error if a needy file is missing" do
+        it "should raise a Hoard::Error if a needy file is missing" do
           write_file 'A/support'
           @hoard.support_files = {
             'A' => {'missing' => '../support'}
           }
-          lambda{@hoard.create}.should raise_error(RuntimeError)
+          lambda{@hoard.create}.should raise_error(Hoard::Error)
         end
 
-        it "should raise an error if a support file is missing" do
+        it "should raise a Hoard::Error if a support file is missing" do
           write_file 'A/file'
           @hoard.support_files = {
             'A' => {'file' => '../missing'}
           }
-          lambda{@hoard.create}.should raise_error(RuntimeError)
+          lambda{@hoard.create}.should raise_error(Hoard::Error)
         end
       end
     end

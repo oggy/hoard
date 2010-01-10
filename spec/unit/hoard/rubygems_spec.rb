@@ -142,18 +142,18 @@ describe Hoard::Rubygems do
         @hoard.needy_files_optional = false
       end
 
-      it "should raise an error if a configured gem is not installed" do
+      it "should raise a Hoard::Error if a configured gem is not installed" do
         # gem not created
         @hoard.gem_support_files = YAML.load <<-EOS
         mygem:
           lib:
             mygem.rb: ../data/file
         EOS
-        lambda{@hoard.create}.should raise_error(RuntimeError)
+        lambda{@hoard.create}.should raise_error(Hoard::Error)
         File.should_not exist('HOARD/1/data/file')
       end
 
-      it "should raise an error if a configured gem is not loaded" do
+      it "should raise a Hoard::Error if a configured gem is not loaded" do
         make_gem 'mygem', '0.0.1' do |gem|
           gem.file 'lib/mygem.rb'
           gem.file 'data/file'
@@ -165,7 +165,7 @@ describe Hoard::Rubygems do
         EOS
 
         # 'gems/mygem-0.0.1/lib' not added to load path
-        lambda{@hoard.create}.should raise_error(RuntimeError)
+        lambda{@hoard.create}.should raise_error(Hoard::Error)
         File.should_not exist('HOARD/1/data/file')
       end
     end
