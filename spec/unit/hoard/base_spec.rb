@@ -303,6 +303,16 @@ describe Hoard::Base do
         YAML.load_file('HOARD/metadata.yml')['load_path'].should == ['1/__hoard__']
       end
 
+      it "should allow multiple support files per needy file" do
+        write_file 'A/a'
+        write_file 'support1'
+        write_file 'support2'
+        @hoard.support_files = {'A' => {'a' => ['../support1', '../support2']}}
+        @hoard.create
+        File.read('HOARD/1/support1').should == 'support1'
+        File.read('HOARD/1/support2').should == 'support2'
+      end
+
       describe "when needy files are optional" do
         before do
           @hoard.needy_files_optional = true

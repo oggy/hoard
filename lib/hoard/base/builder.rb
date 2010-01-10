@@ -16,23 +16,25 @@ module Hoard
           add_load_path_entry File.expand_path(entry)
         end
         support_files.each do |directory, support_spec|
-          support_spec.each do |needy_path, support_path|
-            layer = layer_with_file(needy_path, directory) or
-              needy_files_optional ? next : raise("needy file not found: #{needy_path}")
-            num_ascents = num_ascents_required_for(needy_path, support_path) or
-              next
-            layer.depth = num_ascents
+          support_spec.each do |needy_path, support_paths|
+            Array(support_paths).each do |support_path|
+              layer = layer_with_file(needy_path, directory) or
+                needy_files_optional ? next : raise("needy file not found: #{needy_path}")
+              num_ascents = num_ascents_required_for(needy_path, support_path) or
+                next
+              layer.depth = num_ascents
 
-            # TODO: support colliding support paths
-            needy_link = Pathname( layer.path_of(needy_path) )
-            needy_target = Pathname( layer.target_of(needy_path) )
-            support_link = (needy_link.dirname + support_path).cleanpath.to_s
-            support_target = (needy_target.dirname + support_path).cleanpath.to_s
+              # TODO: support colliding support paths
+              needy_link = Pathname( layer.path_of(needy_path) )
+              needy_target = Pathname( layer.target_of(needy_path) )
+              support_link = (needy_link.dirname + support_path).cleanpath.to_s
+              support_target = (needy_target.dirname + support_path).cleanpath.to_s
 
-            File.exist?(support_target) or
-              raise "support file not found: #{support_target}"
-            FileUtils.mkdir_p File.dirname(support_link)
-            File.symlink(support_target, support_link)
+              File.exist?(support_target) or
+                raise "support file not found: #{support_target}"
+              FileUtils.mkdir_p File.dirname(support_link)
+              File.symlink(support_target, support_link)
+            end
           end
         end
         add_metadata_file
