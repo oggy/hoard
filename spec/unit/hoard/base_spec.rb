@@ -31,6 +31,16 @@ describe Hoard::Base do
       hoard.support_files.should == {}
     end
 
+    it "should make needy files optional if the :needy_files_optional option is true" do
+      hoard = make_hoard(:needy_files_optional => true)
+      hoard.needy_files_optional.should be_true
+    end
+
+    it "should not make needy files optional by default" do
+      hoard = make_hoard
+      hoard.needy_files_optional.should be_false
+    end
+
     it "should set the #creating? flag to true, if the :create option is true" do
       hoard = make_hoard(:create => true)
       hoard.should be_creating
@@ -291,6 +301,50 @@ describe Hoard::Base do
         @hoard.support_files = {'A' => {'a' => '../a_support'}}
         @hoard.create
         YAML.load_file('HOARD/metadata.yml')['load_path'].should == ['1/__hoard__']
+      end
+
+      describe "when needy files are optional" do
+        before do
+          @hoard.needy_files_optional = true
+        end
+
+        it "should ignore missing needy files" do
+          write_file 'A/support'
+          @hoard.support_files = {
+            'A' => {'missing' => '../support'}
+          }
+          lambda{@hoard.create}.should_not raise_error(RuntimeError)
+        end
+
+        it "should raise an error if a support file is missing" do
+          write_file 'A/file'
+          @hoard.support_files = {
+            'A' => {'file' => '../missing'}
+          }
+          lambda{@hoard.create}.should raise_error(RuntimeError)
+        end
+      end
+
+      describe "when needy files are not optional" do
+        before do
+          @hoard.needy_files_optional = false
+        end
+
+        it "should raise an error if a needy file is missing" do
+          write_file 'A/support'
+          @hoard.support_files = {
+            'A' => {'missing' => '../support'}
+          }
+          lambda{@hoard.create}.should raise_error(RuntimeError)
+        end
+
+        it "should raise an error if a support file is missing" do
+          write_file 'A/file'
+          @hoard.support_files = {
+            'A' => {'file' => '../missing'}
+          }
+          lambda{@hoard.create}.should raise_error(RuntimeError)
+        end
       end
     end
   end

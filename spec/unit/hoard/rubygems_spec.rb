@@ -78,33 +78,6 @@ describe Hoard::Rubygems do
       File.read('HOARD/1/data/mygem_file').should == 'data/mygem_file'
     end
 
-    it "should not add support files for uninstalled gems" do
-      # gem not created
-      @hoard.gem_support_files = YAML.load <<-EOS
-        mygem:
-          lib:
-            mygem.rb: ../data/file
-      EOS
-      @hoard.create
-      File.should_not exist('HOARD/1/data/file')
-    end
-
-    it "should not add support files for unloaded gems" do
-      make_gem 'mygem', '0.0.1' do |gem|
-        gem.file 'lib/mygem.rb'
-        gem.file 'data/file'
-      end
-      @hoard.gem_support_files = YAML.load <<-EOS
-        mygem:
-          lib:
-            mygem.rb: ../data/file
-      EOS
-
-      # 'gems/mygem-0.0.1/lib' not added to load path
-      @hoard.create
-      File.should_not exist('HOARD/1/data/file')
-    end
-
     it "should add support gem files to the same layer as the corresponding needy file" do
       make_gem 'first', '0.0.1' do |gem|
         gem.file 'lib/test'
@@ -129,6 +102,72 @@ describe Hoard::Rubygems do
       File.read('HOARD/1/data/second').should == 'data/second'
       File.read('HOARD/2/__hoard__/test').should == 'lib/test'
       File.read('HOARD/2/data/first').should == 'data/first'
+    end
+
+    describe "when needy files are optional" do
+      before do
+        @hoard.needy_files_optional = true
+      end
+
+      it "should not add support files for uninstalled gems" do
+        # gem not created
+        @hoard.gem_support_files = YAML.load <<-EOS
+        mygem:
+          lib:
+            mygem.rb: ../data/file
+        EOS
+        @hoard.create
+        File.should_not exist('HOARD/1/data/file')
+      end
+
+      it "should not add support files for unloaded gems" do
+        make_gem 'mygem', '0.0.1' do |gem|
+          gem.file 'lib/mygem.rb'
+          gem.file 'data/file'
+        end
+        @hoard.gem_support_files = YAML.load <<-EOS
+        mygem:
+          lib:
+            mygem.rb: ../data/file
+        EOS
+
+        # 'gems/mygem-0.0.1/lib' not added to load path
+        @hoard.create
+        File.should_not exist('HOARD/1/data/file')
+      end
+    end
+
+    describe "when needy files are not optional" do
+      before do
+        @hoard.needy_files_optional = false
+      end
+
+      it "should raise an error if a configured gem is not installed" do
+        # gem not created
+        @hoard.gem_support_files = YAML.load <<-EOS
+        mygem:
+          lib:
+            mygem.rb: ../data/file
+        EOS
+        lambda{@hoard.create}.should raise_error(RuntimeError)
+        File.should_not exist('HOARD/1/data/file')
+      end
+
+      it "should raise an error if a configured gem is not loaded" do
+        make_gem 'mygem', '0.0.1' do |gem|
+          gem.file 'lib/mygem.rb'
+          gem.file 'data/file'
+        end
+        @hoard.gem_support_files = YAML.load <<-EOS
+        mygem:
+          lib:
+            mygem.rb: ../data/file
+        EOS
+
+        # 'gems/mygem-0.0.1/lib' not added to load path
+        lambda{@hoard.create}.should raise_error(RuntimeError)
+        File.should_not exist('HOARD/1/data/file')
+      end
     end
   end
 

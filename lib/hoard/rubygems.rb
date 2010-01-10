@@ -52,7 +52,7 @@ module Hoard
     def add_gem_support_files
       gem_support_files.each do |gem, require_paths|
         specification = specification_for(gem) or
-          next
+          needy_files_optional ? next : raise("gem not loaded: #{gem}")
         full_gem_path = Pathname(specification.full_gem_path).cleanpath.to_s
         require_paths.each do |require_path, needy_paths|
           full_require_path = "#{full_gem_path}/#{require_path}"

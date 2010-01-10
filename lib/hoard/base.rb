@@ -22,6 +22,7 @@ module Hoard
       @hoard_path = options[:hoard_path] || 'hoard'
       @creating = options[:create] || false
       @support_files = options[:support_files] || {}
+      @needy_files_optional = options[:needy_files_optional] || false
 
       @load_path = options[:load_path] || $LOAD_PATH
       @after_create = options[:after_create] || lambda{exit}
@@ -46,6 +47,12 @@ module Hoard
     attr_accessor :load_path
 
     #
+    # If true, an error won't be raised if a needy file can't be
+    # found.  Otherwise, a RuntimeError will be raised.
+    #
+    attr_accessor :needy_files_optional
+
+    #
     # Declare that the load path is ready for hoarding.
     #
     # When creating the hoard, this will #create the hoard, and exit.
@@ -68,7 +75,7 @@ module Hoard
     # Usually called by #ready, rather than invoked directly.
     #
     def create
-      builder = Builder.new(hoard_path, support_files)
+      builder = Builder.new(hoard_path, support_files, :needy_files_optional => needy_files_optional)
       builder.build(load_path)
     end
 
