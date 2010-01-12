@@ -153,6 +153,29 @@ describe Hoard::Rubygems do
       lambda{@hoard.create}.should raise_error(Hoard::Error)
     end
 
+    it "should use the loaded version of a gem if more than one exists" do
+      v001 = make_gem 'mygem', '0.0.1' do |gem|
+        gem.file 'lib/mygem.rb'
+        gem.file 'data/file', '0.0.1'
+      end
+      v002 = make_gem 'mygem', '0.0.2' do |gem|
+        gem.file 'lib/mygem.rb'
+        gem.file 'data/file', '0.0.2'
+      end
+      v003 = make_gem 'mygem', '0.0.3' do |gem|
+        gem.file 'lib/mygem.rb'
+        gem.file 'data/file', '0.0.3'
+      end
+      @hoard.gem_support_files = YAML.load <<-EOS
+        mygem:
+          lib:
+            mygem.rb: ../data/file
+      EOS
+      load_gem v002
+      @hoard.create
+      File.read('HOARD/1/data/file').should == '0.0.2'
+    end
+
     it "should check for gems whose full name matches the given name first" do
       matched = make_gem 'matched', '0.0.1' do |gem|
         gem.file 'lib/matched.rb'
