@@ -65,7 +65,8 @@ module Hoard
     end
 
     def specification_for(name)
-      # TODO: support version-specific gem support files
+      specification = source_index.specification(name) and
+        return specification
       requirements = Gem::Requirement.default
       dependency = Gem::Dependency.new(name, requirements)
       matching_specs = source_index.search(dependency)

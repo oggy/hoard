@@ -152,6 +152,26 @@ describe Hoard::Rubygems do
       EOS
       lambda{@hoard.create}.should raise_error(Hoard::Error)
     end
+
+    it "should check for gems whose full name matches the given name first" do
+      matched = make_gem 'matched', '0.0.1' do |gem|
+        gem.file 'lib/matched.rb'
+        gem.file 'data/file', 'matched'
+      end
+      unmatched = make_gem 'matched-0.0.1', '0.0.1' do |gem|
+        gem.file 'lib/unmatched.rb'
+        gem.file 'data/file', 'unmatched'
+      end
+      @hoard.gem_support_files = YAML.load <<-EOS
+        matched-0.0.1:
+          lib:
+            matched.rb: ../data/file
+      EOS
+      load_gem matched
+      load_gem unmatched
+      @hoard.create
+      File.read('HOARD/1/data/file').should == 'matched'
+    end
   end
 
   class GemHelper
