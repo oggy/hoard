@@ -52,7 +52,7 @@ module Hoard
     def add_gem_support_files
       gem_support_files.each do |gem, require_paths|
         specification = specification_for(gem) or
-          needy_files_optional ? next : raise(Error, "gem not loaded: #{gem}")
+          next
         full_gem_path = Pathname(specification.full_gem_path).cleanpath.to_s
         require_paths.each do |require_path, needy_paths|
           full_require_path = "#{full_gem_path}/#{require_path}"
@@ -68,7 +68,8 @@ module Hoard
       # TODO: support version-specific gem support files
       requirements = Gem::Requirement.default
       dependency = Gem::Dependency.new(name, requirements)
-      source_index.search(dependency).first
+      matching_specs = source_index.search(dependency)
+      matching_specs.select{|spec| spec.loaded?}.first
     end
   end
 end
